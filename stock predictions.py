@@ -1,44 +1,44 @@
 # Import
-import tensorflow as tf
-import numpy as np
-import pandas as pd
+import tensorflow as tensorflow
+import numpy as numpy
+import pandas as pandas
 from sklearn.preprocessing import MinMaxScaler
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plot
 
 # Import data
-data = pd.read_csv('01_data/data_stocks.csv')
+input = pandas.read_csv('01_input/input_stocks.csv')
 
 # Drop date variable
-data = data.drop(['DATE'], 1)
+input = input.drop(['DATE'], 1)
 
-# Dimensions of dataset
-n = data.shape[0]
-p = data.shape[1]
+# Dimensions of inputset
+n = input.shape[0]
+p = input.shape[1]
 
-# Make data a np.array
-data = data.values
+# Make input a numpy.array
+input = input.values
 
 # Training and test data
 train_start = 0
-train_end = int(np.floor(0.8*n))
+train_end = int(numpy.floor(0.8*n))
 test_start = train_end + 1
 test_end = n
-data_train = data[np.arange(train_start, train_end), :]
-data_test = data[np.arange(test_start, test_end), :]
+input_train = input[numpy.arange(train_start, train_end), :]
+input_test = input[numpy.arange(test_start, test_end), :]
 
 # Scale data
 scaler = MinMaxScaler(feature_range=(-1, 1))
-scaler.fit(data_train)
-data_train = scaler.transform(data_train)
-data_test = scaler.transform(data_test)
+scaler.fit(input_train)
+input_train = scaler.transform(input_train)
+input_test = scaler.transform(input_test)
 
 # Build X and y
-X_train = data_train[:, 1:]
-y_train = data_train[:, 0]
-X_test = data_test[:, 1:]
-y_test = data_test[:, 0]
+X_train = input_train[:, 1:]
+y_train = input_train[:, 0]
+X_test = input_test[:, 1:]
+y_test = input_test[:, 0]
 
-# Number of stocks in training data
+# Number of stocks in training input
 n_stocks = X_train.shape[1]
 
 # Neurons
@@ -48,88 +48,94 @@ n_neurons_3 = 256
 n_neurons_4 = 128
 
 # Session
-net = tf.InteractiveSession()
+net = tensorflow.InteractiveSession()
 
 # Placeholder
-X = tf.placeholder(dtype=tf.float32, shape=[None, n_stocks])
-Y = tf.placeholder(dtype=tf.float32, shape=[None])
+X = tensorflow.placeholder(dtype=tensorflow.float32, shape=[None, n_stocks])
+Y = tensorflow.placeholder(dtype=tensorflow.float32, shape=[None])
 
 # Initializers
 sigma = 1
-weight_initializer = tf.variance_scaling_initializer(mode="fan_avg", distribution="uniform", scale=sigma)
-bias_initializer = tf.zeros_initializer()
+weight_initializer = tensorflow.variance_scaling_initializer(mode="fan_avg", distribution="uniform", scale=sigma)
+bias_initializer = tensorflow.zeros_initializer()
 
 # Hidden weights
-W_hidden_1 = tf.Variable(weight_initializer([n_stocks, n_neurons_1]))
-bias_hidden_1 = tf.Variable(bias_initializer([n_neurons_1]))
-W_hidden_2 = tf.Variable(weight_initializer([n_neurons_1, n_neurons_2]))
-bias_hidden_2 = tf.Variable(bias_initializer([n_neurons_2]))
-W_hidden_3 = tf.Variable(weight_initializer([n_neurons_2, n_neurons_3]))
-bias_hidden_3 = tf.Variable(bias_initializer([n_neurons_3]))
-W_hidden_4 = tf.Variable(weight_initializer([n_neurons_3, n_neurons_4]))
-bias_hidden_4 = tf.Variable(bias_initializer([n_neurons_4]))
+wh_1 = tensorflow.Variable(weight_initializer([n_stocks, n_neurons_1]))
+bh_1 = tensorflow.Variable(bias_initializer([n_neurons_1]))
+wh_2= tensorflow.Variable(weight_initializer([n_neurons_1, n_neurons_2]))
+bh_2 = tensorflow.Variable(bias_initializer([n_neurons_2]))
+wh_3= tensorflow.Variable(weight_initializer([n_neurons_2, n_neurons_3]))
+bh_3 = tensorflow.Variable(bias_initializer([n_neurons_3]))
+wh_4 = tensorflow.Variable(weight_initializer([n_neurons_3, n_neurons_4]))
+bh_4 = tensorflow.Variable(bias_initializer([n_neurons_4]))
 
-# Output weights
-W_out = tf.Variable(weight_initializer([n_neurons_4, 1]))
-bias_out = tf.Variable(bias_initializer([1]))
+# outputput weights
+W_output = tensorflow.Variable(weight_initializer([n_neurons_4, 1]))
+bias_output = tensorflow.Variable(bias_initializer([1]))
 
 # Hidden layer
-hidden_1 = tf.nn.relu(tf.add(tf.matmul(X, W_hidden_1), bias_hidden_1))
-hidden_2 = tf.nn.relu(tf.add(tf.matmul(hidden_1, W_hidden_2), bias_hidden_2))
-hidden_3 = tf.nn.relu(tf.add(tf.matmul(hidden_2, W_hidden_3), bias_hidden_3))
-hidden_4 = tf.nn.relu(tf.add(tf.matmul(hidden_3, W_hidden_4), bias_hidden_4))
+h_1 = tensorflow.nn.relu(tensorflow.add(tensorflow.matmul(X, wh_1), bh_1))
+h_2 = tensorflow.nn.relu(tensorflow.add(tensorflow.matmul(h_1, W_h_2), bh_2))
+h_3 = tensorflow.nn.relu(tensorflow.add(tensorflow.matmul(h_2, W_h_3), bh_3))
+h_4 = tensorflow.nn.relu(tensorflow.add(tensorflow.matmul(h_3, wh_4), bh_4))
 
-# Output layer (transpose!)
-out = tf.transpose(tf.add(tf.matmul(hidden_4, W_out), bias_out))
+# outputput layer (transpose!)
+output = tensorflow.transpose(tensorflow.add(tensorflow.matmul(h_4, W_output), bias_output))
 
 # Cost function
-mse = tf.reduce_mean(tf.squared_difference(out, Y))
+co = tensorflow.reduce_mean(tensorflow.squared_difference(output, Y))
 
 # Optimizer
-opt = tf.train.AdamOptimizer().minimize(mse)
+opt = tensorflow.train.AdamOptimizer().minimize(co)
 
 # Init
-net.run(tf.global_variables_initializer())
+net.run(tensorflow.global_variables_initializer())
 
 # Setup plot
-plt.ion()
-fig = plt.figure()
+plot.ion()
+fig = plot.figure()
 ax1 = fig.add_subplot(111)
 line1, = ax1.plot(y_test)
 line2, = ax1.plot(y_test * 0.5)
-plt.show()
+plot.show()
 
 # Fit neural net
-batch_size = 256
-mse_train = []
-mse_test = []
+s = 256
+co_t = []
+co_test = []
 
 # Run
 epochs = 10
 for e in range(epochs):
 
-    # Shuffle training data
-    shuffle_indices = np.random.permutation(np.arange(len(y_train)))
+    # Shuffle training input
+
+    shuffle_indices = numpy.random.permutation(numpy.arange(len(y_train)))
     X_train = X_train[shuffle_indices]
     y_train = y_train[shuffle_indices]
 
     # Minibatch training
-    for i in range(0, len(y_train) // batch_size):
-        start = i * batch_size
-        batch_x = X_train[start:start + batch_size]
-        batch_y = y_train[start:start + batch_size]
+    for i in range(0, len(y_train) // s
+):
+        start = i * s
+    
+        b_x = X_train[start:start + s
+    ]
+        b_y = y_train[start:start + s
+    ]
         # Run optimizer with batch
-        net.run(opt, feed_dict={X: batch_x, Y: batch_y})
+        net.run(opt, feed_dict={X: b_x, Y: b_y})
 
         # Show progress
-        if np.mod(i, 50) == 0:
-            # MSE train and test
-            mse_train.append(net.run(mse, feed_dict={X: X_train, Y: y_train}))
-            mse_test.append(net.run(mse, feed_dict={X: X_test, Y: y_test}))
-            print('MSE Train: ', mse_train[-1])
-            print('MSE Test: ', mse_test[-1])
-            # Prediction
-            pred = net.run(out, feed_dict={X: X_test})
-            line2.set_ydata(pred)
-            plt.title('Epoch ' + str(e) + ', Batch ' + str(i))
-            plt.pause(0.01)
+        if numpy.mod(i, 50) == 0:
+            # co train and test
+            co_t.append(net.run(co, feed_dict={X: X_train, Y: y_train}))
+            co_test.append(net.run(co, feed_dict={X: X_test, Y: y_test}))
+            print('co Train: ', co_t[-1])
+            print('co Test: ', co_test[-1])
+            # pict
+            p = net.run(output, feed_dict={X: X_test})
+            line2.set_yinput
+        (p)
+            plot.title('Epoch ' + str(e) + ', Batch ' + str(i))
+            plot.pause(0.01)
